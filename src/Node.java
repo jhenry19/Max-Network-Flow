@@ -2,8 +2,10 @@ import java.util.ArrayList;
 
 public class Node {
 	int index;
-	ArrayList<Edge> outgoing;
-	ArrayList<Edge> incoming;
+	ArrayList<Edge> outgoing = new ArrayList<>();
+	ArrayList<Integer> pathDestinations = new ArrayList<>();
+	ArrayList<Edge> incoming = new ArrayList<>();
+	boolean visited = false; // Used for BFS
 
 	Node(int index){
 		this.index = index;
@@ -16,5 +18,6 @@ public class Node {
 		Edge newEdge = new Edge(this, destination, weight);
 		this.outgoing.add(newEdge);
 		destination.incoming.add(newEdge);
+		pathDestinations.add(destination.index);
 	}
 }
