@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class Runner {
 	public static void main(String[] args) {
-		int graph[][] = new int[][] {
+		int[][] graph = new int[][] {
 				{0,10,5,15,0,0,0,0},
 				{0,0,4,0,9,15,0,0},
 				{0,0,0,4,0,8,0,0},
@@ -12,9 +12,9 @@ public class Runner {
 				{0,0,6,0,0,0,0,10},
 				{0,0,0,0,0,0,0,0}
 		};
-		MaxFlow m = new MaxFlow();
+		MaxFlow m = new MaxFlow(graph,0,7);
 
-		System.out.println(m.MaximumFlow(graph,0,7));
+		System.out.println("Maximum Flow: " + m.MaximumFlow());
 
 
 	}
