@@ -2,28 +2,36 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class MaxFlow {
-	int TOTAL_NODES = 8;
-	int[][] graph;
-	int s;
-	int t;
+	int TOTAL_NODES;
+	int[][] graph; // 2D array adjacency matrix hold the edges in the graph and their weights
+	int source;
+	int sink;
 
-	MaxFlow(int[][] graph, int s, int t){
+	// Default constructor initialized needed variables
+	MaxFlow(int[][] graph, int source, int sink){
 		this.graph = graph;
-		this.s = s;
-		this.t = t;
+		this.source = source;
+		this.sink = sink;
+		TOTAL_NODES = graph.length;
 	}
 
+	/**
+	 * Determines the maximum flow possible through a directed graph. Uses the Ford-Fulkerson algorithm.
+	 * @return and int representing the maximum amount of flow through the directed graph
+	 */
 	public int MaximumFlow() {
-		int[][] residualGraph = new int[TOTAL_NODES][TOTAL_NODES]; // residual graph is identical to graph to start
-
-		// residualGraph is a copy of graph at the beginning
+		// Generates a residual graph, identical to the graph at the beginning
+		int[][] residualGraph = new int[TOTAL_NODES][TOTAL_NODES];
 		for (int i = 0; i < TOTAL_NODES; i++)
 			System.arraycopy(graph[i], 0, residualGraph[i], 0, TOTAL_NODES);
 
-		int[] path = new int[TOTAL_NODES]; //used to store augmented path
-		int maxFlow = 0;
 
-		while (BFS(residualGraph, s, t, path)) {
+		int[] path = new int[TOTAL_NODES]; // used to store augmented path
+		int maxFlow = 0; // totals the amount of flows through each augment path
+
+		// While an augmented path exits in the residual graph
+		while (BFS(residualGraph, path)) {
+			// Max flow is updated with the amount of the flow through the augmented path
 			maxFlow += augment(path, residualGraph);
 		}
 		return maxFlow;
@@ -40,15 +48,16 @@ public class MaxFlow {
 		int pathFlow = Integer.MAX_VALUE;
 
 		// Work backwards through the augmented path to find the edge with the lowest capacity (bottleneck)
-		for (int i = t; i != s; i = path[i]) {
+		for (int i = sink; i != source; i = path[i]) {
 			node = path[i];
 			pathFlow = Math.min(pathFlow, residualGraph[node][i]);
 		}
 
+		// prints the flow of this augmented path
 		System.out.print("\tflow: " + pathFlow + "\n");
 
 		// Update residual graph with new flow
-		for (int i = t; i != s; i = path[i]) {
+		for (int i = sink; i != source; i = path[i]) {
 			node = path[i];
 			residualGraph[node][i] -= pathFlow;
 			residualGraph[i][node] += pathFlow;
@@ -58,7 +67,7 @@ public class MaxFlow {
 
 	//https://favtutor.com/blogs/breadth-first-search-java
 	//https://www.geeksforgeeks.org/ford-fulkerson-algorithm-for-maximum-flow-problem/
-	public boolean BFS(int[][] rGraph, int s, int t, int[] path) {
+	public boolean BFS(int[][] rGraph, int[] augPath) {
 		Queue<Integer> queue = new LinkedList<>(); //Queue used for BFS
 
 		// Visited array used to mark nodes as found by BFS. Set to false to start
@@ -68,33 +77,38 @@ public class MaxFlow {
 		}
 
 		// BFS started by adding s to queue and visiting it
-		queue.add(s);
-		visited[s] = true;
+		queue.add(source);
+		visited[source] = true;
 
-		int sourceNode;
+		int currNode;
 		while (queue.size() != 0) { // while there are nodes in the queue
-			sourceNode = queue.poll();
-			for (int destinationNode = 0; destinationNode < TOTAL_NODES; destinationNode++) {
-				// If the destination has not been visited and there is an edge from source to the destination
-				if (!visited[destinationNode] && rGraph[sourceNode][destinationNode] > 0) {
-					if (destinationNode == t) { // If the path is complete (arrived at sink node)
-						path[destinationNode] = sourceNode;
-						printPath(path);
+			currNode = queue.poll();
+			for (int adjacentNode = 0; adjacentNode < TOTAL_NODES; adjacentNode++) {
+				// If the adjacent node has not been visited and the nodes are adjacent (there is an edge connecting them)
+				if (!visited[adjacentNode] && rGraph[currNode][adjacentNode] > 0) {
+					if (adjacentNode == sink) { // If the path reaches the sink node (making it a valid augmented path)
+						augPath[adjacentNode] = currNode;
+						printPath(augPath); // Prints the path as per assignment requirements
 						return true;
 					}
-					queue.add(destinationNode);
-					path[destinationNode] = sourceNode;
-					visited[destinationNode] = true;
+					// else continues through BFS
+					queue.add(adjacentNode);
+					augPath[adjacentNode] = currNode;
+					visited[adjacentNode] = true;
 				}
 			}
 		}
 		return false;
 	}
 
+	/**
+	 * Prints augmented paths as they are found
+	 */
 	void printPath(int[] path) {
 		int[] pathOrdered = new int[TOTAL_NODES];
 		int counter = 0;
-		for (int node = t; node != s; node = path[node]) {
+		// Saves the nodes in the path in reverse order (start with sink node)
+		for (int node = sink; node != source; node = path[node]) {
 			pathOrdered[counter] = node;
 			counter++;
 		}
@@ -103,13 +117,11 @@ public class MaxFlow {
 		int nodeIndex;
 		System.out.print("Path:");
 		for (int i = counter; i >= 0; i--) {
-			nodeIndex = pathOrdered[i] + 1;
+			nodeIndex = pathOrdered[i] + 1; // adjusted so printing matches node indices on homework
 
-			if (nodeIndex == 1) System.out.print(" s");
-			else if (nodeIndex == 8) System.out.print(" t");
-			else System.out.print(" " + nodeIndex);
+			if (nodeIndex == 1) System.out.print(" s");      // s is printed for source node
+			else if (nodeIndex == 8) System.out.print(" t"); // t is printed for sink node
+			else System.out.print(" " + nodeIndex);          // node index is printed for all others
 		}
 	}
-
-
 }
